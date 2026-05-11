@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Truth Social</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      zoom: 0.9;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #ffffff;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      color: #0f1419;
+    }
+    a { text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; }
+    svg { shape-rendering: geometricPrecision; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+/* ═══════════════════════════════════════
+   TIMESTAMP  (May 11 2026, 8:07 PM Dubai = UTC+4 → stored as UTC)
+═══════════════════════════════════════ */
+
+const POST_UTC = new Date('2026-05-11T16:07:00Z');
+
+const LOCAL_TIMESTAMP = new Intl.DateTimeFormat(undefined, {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: true,
+}).format(POST_UTC);
+
+/* ═══════════════════════════════════════
+   SVG ICONS
+═══════════════════════════════════════ */
+
+const IcoArrow = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="15 18 9 12 15 6"/>
+  </svg>
+);
+
+const IcoDots = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/>
+  </svg>
+);
+
+const IcoChat = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+);
+
+const IcoRetweet = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="17 1 21 5 17 9"/>
+    <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+    <polyline points="7 23 3 19 7 15"/>
+    <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+  </svg>
+);
+
+const IcoHeart = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+  </svg>
+);
+
+const IcoBookmark = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+  </svg>
+);
+
+const IcoShare = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+    <polyline points="16 6 12 2 8 6"/>
+    <line x1="12" y1="2" x2="12" y2="15"/>
+  </svg>
+);
+
+const IcoEye = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+
+const IcoEyeOff = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+    <line x1="1" y1="1" x2="23" y2="23"/>
+  </svg>
+);
+
+const IcoX = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
+
+/* ═══════════════════════════════════════
+   LOGO  (exact official SVG)
+═══════════════════════════════════════ */
+
+const TruthLogo = () => (
+  <a href="https://truthsocial.com/" style={{ display: 'block', padding: '15px 18px 0 18px', textDecoration: 'none' }}>
+    <svg width="114.46" height="20" viewBox="0 0 641 112" fill="none" xmlns="http://www.w3.org/2000/svg"
+         style={{ display: 'block' }}>
+      <path d="M117.398 29.827V.096H48.186V109.85h35.327V29.827h33.885Z" fill="#5448EE"/>
+      <path fillRule="evenodd" clipRule="evenodd" d="m179.264 78.446 21.555 31.405h39.473l-26.451-35.483c16.739-11.229 20.58-23.714 20.58-34.48 0-7.513-1.802-14.262-5.407-20.249-3.605-6.103-8.952-10.857-16.041-14.261-7.09-3.521-15.741-5.282-25.955-5.282h-55.694V109.85h35.327V78.446h12.613Zm4.87-23.593h-17.483V28.97h17.483c4.686 0 8.231 1.174 10.634 3.521 2.524 2.23 3.785 5.341 3.785 9.332 0 4.226-1.201 7.454-3.604 9.684-2.404 2.23-6.008 3.345-10.815 3.345Z" fill="#5448EE"/>
+      <path d="M280.559.096v57.639c0 6.69 1.562 11.855 4.686 15.494 3.244 3.638 8.111 5.458 14.6 5.458 6.488 0 11.355-1.82 14.599-5.458 3.364-3.757 5.047-8.921 5.047-15.494V.095h35.327v57.64c0 11.385-2.464 21.128-7.39 29.227-4.927 7.982-11.656 14.027-20.187 18.135-8.411 3.991-17.784 5.986-28.117 5.986-10.334 0-19.586-1.995-27.757-5.986-8.051-4.108-14.42-10.153-19.106-18.135-4.566-7.982-6.849-17.724-6.849-29.227V.095h35.147ZM469.976 29.827V.096H367.239v29.73h33.525v80.025h35.327V29.827h33.885ZM594.57.096V109.85h-35.327v-38.33h-43.077v38.33h-35.327V.096h35.327v41.519h43.077V.095h35.327ZM.959.096h33.913V29.82H.96V.096Z" fill="#5448EE"/>
+      <path d="M640.667 80.484H606.7v29.437h33.967V80.483Z" fill="#2DD0B3"/>
+    </svg>
+  </a>
+);
+
+/* ═══════════════════════════════════════
+   VERIFIED BADGE  (exact Truth Social SVG)
+═══════════════════════════════════════ */
+
+const VerifiedBadge = () => (
+  <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"
+       xmlns="http://www.w3.org/2000/svg"
+       style={{ color: '#E91E8C', flexShrink: 0, display: 'inline-block', verticalAlign: 'middle' }}>
+    <path d="M8.82.521a1.596 1.596 0 012.36 0l.362.398c.42.46 1.07.635 1.664.445l.512-.163a1.596 1.596 0 012.043 1.18l.115.525a1.596 1.596 0 001.218 1.218l.525.115a1.596 1.596 0 011.18 2.043l-.163.513a1.596 1.596 0 00.446 1.663l.397.362a1.596 1.596 0 010 2.36l-.397.362c-.461.42-.635 1.07-.446 1.664l.163.512a1.596 1.596 0 01-1.18 2.043l-.525.115a1.596 1.596 0 00-1.218 1.218l-.115.525a1.596 1.596 0 01-2.043 1.18l-.512-.163a1.596 1.596 0 00-1.664.445l-.362.398a1.596 1.596 0 01-2.36 0l-.362-.398a1.596 1.596 0 00-1.663-.445l-.513.163a1.596 1.596 0 01-2.043-1.18l-.115-.525a1.596 1.596 0 00-1.218-1.218l-.525-.115a1.596 1.596 0 01-1.18-2.043l.164-.512a1.596 1.596 0 00-.446-1.664L.52 11.18a1.596 1.596 0 010-2.36l.398-.362c.46-.42.635-1.07.446-1.663L1.2 6.282a1.596 1.596 0 011.18-2.043l.525-.115a1.596 1.596 0 001.218-1.218l.115-.525A1.596 1.596 0 016.282 1.2l.513.163c.594.19 1.244.015 1.663-.445L8.821.52z" fill="currentColor"/>
+    <path d="M6.66 7.464L5.012 9.111l3.85 3.85 5.483-5.481-1.966-1.966L8.544 9.35 6.66 7.464z" fill="#fff"/>
+    <path opacity=".5" d="M11.25 15.55l-1.646-1.848 1.646-1.646 1.887 1.887-1.887 1.606z" fill="#fff"/>
+  </svg>
+);
+
+/* ═══════════════════════════════════════
+   PREMIUM T+ BADGE  (exact Truth Social SVG)
+═══════════════════════════════════════ */
+
+const PlusBadge = () => (
+  <svg width="16" height="16" viewBox="0 0 22 21" fill="none"
+       xmlns="http://www.w3.org/2000/svg"
+       style={{ flexShrink: 0, display: 'inline-block', verticalAlign: 'middle' }}>
+    <rect x="1" y="0.5" width="20" height="20" rx="6" fill="#08051B"/>
+    <rect x="1" y="0.5" width="20" height="20" rx="6" stroke="white" strokeOpacity="0.2"/>
+    <path d="M6 8.85547H9.05031V11.8448H6V8.85547Z" fill="#2FEECC"/>
+    <path d="M13.3203 5.5V8.85547H16.8594V11.8447H13.3203V15.2002H10.1484V5.5H13.3203Z" fill="white"/>
+  </svg>
+);
+
+/* ═══════════════════════════════════════
+   PROFILE AVATAR  (real Trump avatar, 42×42)
+═══════════════════════════════════════ */
+
+const ProfileAvatar = () => (
+  <div style={{
+    width: '42px', height: '42px', borderRadius: '50%',
+    overflow: 'hidden', flexShrink: 0,
+  }}>
+    <img
+      src="https://static-assets-1.truthsocial.com/tmtg:prime-ts-assets/accounts/avatars/107/780/257/626/128/497/original/454286ac07a6f6e6.jpeg"
+      alt="Avatar"
+      style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+    />
+  </div>
+);
+
+/* ═══════════════════════════════════════
+   SHARED BUTTON PRIMITIVES
+═══════════════════════════════════════ */
+
+const BTN_PURPLE     = '#5448EE';
+const BTN_PURPLE_HOV = '#4338D4';
+
+function PurpleBtn({ full = false, href = '#', children }) {
+  const [hov, setHov] = React.useState(false);
+  return (
+    <a href={href}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: full ? 'block' : 'inline-block',
+        padding: '10px 20px',
+        background: hov ? BTN_PURPLE_HOV : BTN_PURPLE,
+        color: '#ffffff',
+        borderRadius: '9999px',
+        textAlign: 'center',
+        fontWeight: 700,
+        fontSize: '15px',
+        lineHeight: '20px',
+        textDecoration: 'none',
+        marginBottom: full ? '10px' : 0,
+        transition: 'background 0.15s ease',
+        whiteSpace: 'nowrap',
+      }}
+    >{children}</a>
+  );
+}
+
+function OutlineBtn({ full = false, onClick, children }) {
+  const [hov, setHov] = React.useState(false);
+  const style = {
+    display: full ? 'block' : 'inline-block',
+    padding: '9px 20px',
+    background: hov ? '#f7f9f9' : '#ffffff',
+    color: '#0f1419',
+    borderRadius: '9999px',
+    textAlign: 'center',
+    fontWeight: 700,
+    fontSize: '15px',
+    lineHeight: '20px',
+    textDecoration: 'none',
+    border: '1px solid #cfd9de',
+    transition: 'background 0.15s ease',
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    width: full ? '100%' : undefined,
+  };
+  if (onClick) {
+    return (
+      <button onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={style}>
+        {children}
+      </button>
+    );
+  }
+  return (
+    <a href="#" onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={style}>
+      {children}
+    </a>
+  );
+}
+
+/* ═══════════════════════════════════════
+   ACTION BAR  (flex-1 pill buttons with ring-2)
+═══════════════════════════════════════ */
+
+function ActionBtn({ children }) {
+  const [hov, setHov] = React.useState(false);
+  return (
+    <div style={{ flex: 1 }}>
+      <button
+        onMouseEnter={() => setHov(true)}
+        onMouseLeave={() => setHov(false)}
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '4px',
+          paddingLeft: '8px',
+          paddingRight: '8px',
+          paddingTop: '12px',
+          paddingBottom: '12px',
+          borderRadius: '9999px',
+          border: 'none',
+          boxShadow: hov ? '0 0 0 2px #9CA3AF' : '0 0 0 2px #D1D5DB',
+          color: hov ? '#374151' : '#4B5563',
+          background: hov ? '#f9fafb' : '#ffffff',
+          cursor: 'pointer',
+          transition: 'background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease',
+        }}
+      >{children}</button>
+    </div>
+  );
+}
+
+const ActionBar = () => (
+  <div style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '14px 0 16px 0',
+  }}>
+    <ActionBtn><IcoChat /></ActionBtn>
+    <ActionBtn><IcoRetweet /></ActionBtn>
+    <ActionBtn><IcoHeart /></ActionBtn>
+    <ActionBtn><IcoBookmark /></ActionBtn>
+    <ActionBtn><IcoShare /></ActionBtn>
+  </div>
+);
+
+/* ═══════════════════════════════════════
+   HEADER
+═══════════════════════════════════════ */
+
+function Header() {
+  const [backHov, setBackHov] = React.useState(false);
+  const [dotHov,  setDotHov]  = React.useState(false);
+
+  const iconBtn = (active) => ({
+    background: active ? 'rgba(15,20,25,0.08)' : 'transparent',
+    border: 'none',
+    width: '34px', height: '34px',
+    borderRadius: '50%',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'background 0.15s ease',
+    flexShrink: 0,
+  });
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '16px',
+      position: 'sticky', top: 0,
+      background: 'rgba(255,255,255,0.92)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+      zIndex: 50,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <a
+          href="https://truthsocial.com/@realDonaldTrump"
+          onMouseEnter={() => setBackHov(true)}
+          onMouseLeave={() => setBackHov(false)}
+          style={{ ...iconBtn(backHov), color: '#0f1419', textDecoration: 'none' }}
+        >
+          <IcoArrow />
+        </a>
+        <div>
+          <div style={{
+            fontWeight: 700,
+            fontSize: '20px',
+            color: '#0f1419',
+            lineHeight: '26px',
+            letterSpacing: 'normal',
+          }}>
+            Truth Details
+          </div>
+          <div style={{
+            fontSize: '13px',
+            color: '#6b7280',
+            lineHeight: '18px',
+            fontWeight: 400,
+          }}>
+            4665 replies
+          </div>
+        </div>
+      </div>
+      <button
+        style={{ ...iconBtn(dotHov), color: '#536471' }}
+        onMouseEnter={() => setDotHov(true)}
+        onMouseLeave={() => setDotHov(false)}
+      >
+        <IcoDots />
+      </button>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════
+   POST CARD
+═══════════════════════════════════════ */
+
+const PostCard = ({ onLikeClick }) => (
+  <div style={{ padding: '16px 16px 0 16px' }}>
+
+    {/* User row */}
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
+      <ProfileAvatar />
+      <div style={{ paddingTop: '1px' }}>
+        {/* Name + badges */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+          <span style={{
+            fontWeight: 600,
+            fontSize: '15px',
+            color: '#0f1419',
+            lineHeight: '20px',
+          }}>
+            Donald J. Trump
+          </span>
+          <VerifiedBadge />
+          <PlusBadge />
+        </div>
+        {/* Handle */}
+        <div style={{
+          fontSize: '15px',
+          color: '#6b7280',
+          lineHeight: '20px',
+          fontWeight: 400,
+        }}>
+          @realDonaldTrump
+        </div>
+      </div>
+    </div>
+
+    {/* Body text — text-lg = 18px */}
+    <p style={{
+      fontSize: '18px',
+      lineHeight: '1.65',
+      color: '#0f1419',
+      fontWeight: 400,
+      wordBreak: 'break-word',
+      marginBottom: '16px',
+    }}>
+      TOKENIZED ASSETS are the FUTURE!!! The World is changing FAST, and
+      America MUST lead &#8212; not China, not the Radical Left, not the
+      Globalists that have been WRONG about EVERYTHING! Smart people are
+      finally understanding the POWER of Digital Assets, Tokenization, and
+      bringing REAL VALUE onto the Blockchain. REAL ESTATE, STOCKS, ART,
+      EVERYTHING can be bigger, stronger, faster, and more efficient than
+      ever before. VERY EXCITING!!! The United States should become the
+      CRYPTO CAPITAL OF THE WORLD, with innovation, jobs, and MASSIVE
+      economic growth. We have the greatest minds, the greatest workers, and
+      the greatest technology anywhere on Earth &#8212; BY FAR. The future
+      belongs to people who think BIG, and tokenized assets are a BIG DEAL.
+      just IMAGINE the time we have a coin for everything, including my tan.
+      TAN COIN!!! &#127482;&#127480;
+    </p>
+
+    {/* Stats row */}
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: '18px',
+      padding: '11px 0',
+      fontSize: '15px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+        <span
+          onClick={onLikeClick}
+          style={{ cursor: 'pointer' }}
+          onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+          onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+        >
+          <strong style={{ fontWeight: 700, color: '#0f1419' }}>7.78k</strong>
+          <span style={{ color: '#6b7280', marginLeft: '4px' }}>ReTruths</span>
+        </span>
+        <span
+          onClick={onLikeClick}
+          style={{ cursor: 'pointer' }}
+          onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+          onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+        >
+          <strong style={{ fontWeight: 700, color: '#0f1419' }}>34.2k</strong>
+          <span style={{ color: '#6b7280', marginLeft: '4px' }}>Likes</span>
+        </span>
+      </div>
+      <span style={{ color: '#6b7280', whiteSpace: 'nowrap' }}>{LOCAL_TIMESTAMP}</span>
+    </div>
+
+    {/* Action icons */}
+    <ActionBar />
+  </div>
+);
+
+/* ═══════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════ */
+
+function SidebarCard({ title, description, children }) {
+  return (
+    <div style={{
+      border: '1px solid #e5e7eb',
+      borderRadius: '16px',
+      padding: '16px',
+      marginBottom: '16px',
+    }}>
+      <div style={{
+        fontWeight: 800, fontSize: '15px', color: '#0f1419',
+        marginBottom: '4px', lineHeight: '20px',
+      }}>
+        {title}
+      </div>
+      <div style={{
+        fontSize: '15px', color: '#6b7280',
+        lineHeight: '20px', marginBottom: '16px',
+      }}>
+        {description}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════
+   UNAUTHORIZED MODAL  (likes / interactions)
+═══════════════════════════════════════ */
+
+function UnauthorizedModal({ onClose, onSignIn }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1002,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '16px',
+    }}>
+      {/* Backdrop */}
+      <div onClick={onClose} style={{
+        position: 'absolute', inset: 0,
+        background: 'rgba(107,114,128,0.85)',
+        backdropFilter: 'blur(2px)',
+      }} />
+
+      {/* Dialog */}
+      <div style={{
+        position: 'relative', zIndex: 1,
+        background: '#ffffff', borderRadius: '16px',
+        width: '100%', maxWidth: '512px',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+        overflow: 'hidden',
+      }}>
+        <div style={{ padding: '24px 24px 36px 24px' }}>
+
+          {/* Close button */}
+          <button onClick={onClose} style={{
+            background: 'transparent', border: 'none',
+            cursor: 'pointer', padding: '6px',
+            borderRadius: '9999px', color: '#111827',
+            display: 'flex', alignItems: 'center',
+            marginLeft: '-6px', marginBottom: '8px',
+            transition: 'background 0.15s ease',
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = '#f3f4f6'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <IcoX />
+          </button>
+
+          {/* Centered content */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+
+            {/* Truth Social icon */}
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M46.8002 15V4.5H17.7002V43.3H30.2002V15H46.8002Z" fill="#5448EE"/>
+              <path d="M1 4.5H13V15H1V4.5Z" fill="#5448EE"/>
+              <path d="M34.7998 32.7998H46.7998V43.2998H34.7998V32.7998Z" fill="#2FEECC"/>
+            </svg>
+
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', textAlign: 'center' }}>
+              <h2 style={{ fontSize: '30px', fontWeight: 700, color: '#111827', margin: 0, lineHeight: '36px' }}>
+                Continue the conversation
+              </h2>
+              <p style={{ fontSize: '15px', color: '#6b7280', margin: 0, lineHeight: '22px' }}>
+                Sign up now to create your personalized experience.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '320px' }}>
+              <PurpleBtn full>Create Account</PurpleBtn>
+              <OutlineBtn full onClick={() => { onClose(); onSignIn(); }}>Sign In</OutlineBtn>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════
+   SIGN IN MODAL
+═══════════════════════════════════════ */
+
+function SignInModal({ onClose }) {
+  const [username, setUsername] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [showPw, setShowPw]     = React.useState(false);
+
+  const inputStyle = {
+    display: 'block', width: '100%',
+    padding: '10px 12px',
+    fontSize: '15px', color: '#111827',
+    border: '2px solid #d1d5db',
+    borderRadius: '6px',
+    outline: 'none',
+    fontFamily: 'inherit',
+    transition: 'border-color 0.15s ease',
+    boxSizing: 'border-box',
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1002,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '16px',
+    }}>
+      {/* Backdrop */}
+      <div onClick={onClose} style={{
+        position: 'absolute', inset: 0,
+        background: 'rgba(107,114,128,0.85)',
+        backdropFilter: 'blur(2px)',
+      }} />
+
+      {/* Dialog */}
+      <div style={{
+        position: 'relative', zIndex: 1,
+        background: '#ffffff', borderRadius: '16px',
+        width: '100%', maxWidth: '512px',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+        overflow: 'hidden',
+      }}>
+        <div style={{ padding: '24px 24px 28px 24px' }}>
+
+          {/* Close button */}
+          <button onClick={onClose} style={{
+            background: 'transparent', border: 'none',
+            cursor: 'pointer', padding: '6px',
+            borderRadius: '9999px', color: '#111827',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginLeft: '-6px', marginBottom: '16px',
+            transition: 'background 0.15s ease',
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = '#f3f4f6'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <IcoX />
+          </button>
+
+          {/* Title */}
+          <h1 style={{ fontSize: '30px', fontWeight: 700, color: '#111827', margin: '0 0 4px 0', lineHeight: '36px' }}>
+            Sign in
+          </h1>
+          <p style={{ fontSize: '15px', color: '#6b7280', margin: '0 0 24px 0', lineHeight: '22px' }}>
+            Sign in to Truth Social with your username and password.
+          </p>
+
+          {/* Form */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Username */}
+            <input
+              type="text" placeholder="Username" value={username}
+              onChange={e => setUsername(e.target.value)}
+              autoCapitalize="off" autoCorrect="off"
+              style={inputStyle}
+              onFocus={e => e.target.style.borderColor = '#5448EE'}
+              onBlur={e => e.target.style.borderColor = '#d1d5db'}
+            />
+
+            {/* Password */}
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPw ? 'text' : 'password'} placeholder="Password" value={password}
+                onChange={e => setPassword(e.target.value)}
+                autoComplete="off"
+                style={{ ...inputStyle, paddingRight: '40px' }}
+                onFocus={e => e.target.style.borderColor = '#5448EE'}
+                onBlur={e => e.target.style.borderColor = '#d1d5db'}
+              />
+              <button
+                type="button" onClick={() => setShowPw(p => !p)}
+                tabIndex={-1}
+                style={{
+                  position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  color: '#6b7280', display: 'flex', alignItems: 'center', padding: '2px',
+                }}
+              >
+                {showPw ? <IcoEyeOff /> : <IcoEye />}
+              </button>
+            </div>
+
+            {/* Sign In button */}
+            <button style={{
+              width: '100%', padding: '10px 16px',
+              background: '#5448EE', color: '#ffffff',
+              border: 'none', borderRadius: '9999px',
+              fontSize: '14px', fontWeight: 600,
+              cursor: 'pointer', marginTop: '4px',
+              transition: 'background 0.15s ease',
+            }}
+              onMouseEnter={e => e.currentTarget.style.background = '#4338D4'}
+              onMouseLeave={e => e.currentTarget.style.background = '#5448EE'}
+            >
+              Sign In
+            </button>
+
+            {/* Forgot */}
+            <button style={{
+              width: '100%', padding: '10px 16px',
+              background: 'transparent', color: '#5448EE',
+              border: 'none', borderRadius: '9999px',
+              fontSize: '14px', fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'background 0.15s ease',
+            }}
+              onMouseEnter={e => e.currentTarget.style.background = '#f3f4f6'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              Forgot Username or Password?
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const Sidebar = ({ onSignIn }) => (
+  <div style={{ width: '300px', flexShrink: 0, padding: '12px 0 12px 20px' }}>
+    <SidebarCard
+      title="New to Truth?"
+      description="Join Truth Social to get the full story and details."
+    >
+      <PurpleBtn full>Create Account</PurpleBtn>
+      <OutlineBtn full onClick={onSignIn}>Sign In</OutlineBtn>
+    </SidebarCard>
+
+    <SidebarCard
+      title="Get Truth+"
+      description="Access the full experience with even more live and on-demand content."
+    >
+      <PurpleBtn href="https://truthsocial.com/">Subscribe</PurpleBtn>
+    </SidebarCard>
+
+    <div style={{ fontSize: '15px', color: '#6b7280', lineHeight: '20px', paddingLeft: '2px' }}>
+      <div style={{ marginBottom: '2px' }}>
+        <a href="https://help.truthsocial.com/?_gl=1*p8pngs*_gcl_au*MTQ4MTEwMDYwMi4xNzc4NDQwNTQ1" target="_blank" rel="noopener noreferrer" style={{ color: '#6b7280' }}
+          onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+          onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}>
+          Help Center
+        </a>
+        {' • '}
+        <a href="https://help.truthsocial.com/legal/?_gl=1*p8pngs*_gcl_au*MTQ4MTEwMDYwMi4xNzc4NDQwNTQ1" target="_blank" rel="noopener noreferrer" style={{ color: '#6b7280' }}
+          onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+          onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}>
+          Legal
+        </a>
+      </div>
+      <div>Proudly made in the United States of America. 🇺🇸</div>
+    </div>
+  </div>
+);
+
+/* ═══════════════════════════════════════
+   FIXED BOTTOM BAR
+═══════════════════════════════════════ */
+
+const FooterSection = ({ onSignIn }) => (
+  <div style={{
+    position: 'fixed', bottom: 0, left: 0, right: 0,
+    background: '#ffffff',
+    borderTop: '1px solid #e5e7eb',
+    zIndex: 50,
+  }}>
+    <div style={{
+      maxWidth: '896px',
+      margin: '0 auto',
+      padding: '32px 16px',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    }}>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <p style={{
+          fontWeight: 700, fontSize: '24px', color: '#111827',
+          lineHeight: '32px', margin: 0,
+        }}>
+          Continue the conversation
+        </p>
+        <p style={{
+          fontSize: '16px', fontWeight: 500, color: '#6b7280',
+          lineHeight: '20px', margin: 0,
+        }}>
+          Sign up now to create your personalized experience.
+        </p>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+        <PurpleBtn>Create Account</PurpleBtn>
+        <OutlineBtn onClick={onSignIn}>Sign In</OutlineBtn>
+      </div>
+    </div>
+  </div>
+);
+
+/* ═══════════════════════════════════════
+   ROOT APP
+═══════════════════════════════════════ */
+
+function App() {
+  const [signInOpen,  setSignInOpen]  = React.useState(false);
+  const [unAuthOpen,  setUnAuthOpen]  = React.useState(false);
+  const openSignIn   = () => setSignInOpen(true);
+  const closeSignIn  = () => setSignInOpen(false);
+  const openUnAuth   = () => setUnAuthOpen(true);
+  const closeUnAuth  = () => setUnAuthOpen(false);
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#ffffff',
+      display: 'flex',
+      justifyContent: 'center',
+    }}>
+      <div style={{
+        display: 'flex',
+        width: '100%',
+        maxWidth: '1190px',
+      }}>
+
+        {/* Left nav */}
+        <div style={{ width: '290px', flexShrink: 0 }}>
+          <TruthLogo />
+        </div>
+
+        {/* Center feed */}
+        <div style={{
+          flex: '1 1 auto',
+          maxWidth: '600px',
+          minWidth: 0,
+          borderLeft: '1px solid #eff3f4',
+          borderRight: '1px solid #eff3f4',
+          paddingBottom: '120px',
+        }}>
+          <Header />
+          <PostCard onLikeClick={openUnAuth} />
+        </div>
+
+        {/* Right sidebar */}
+        <Sidebar onSignIn={openSignIn} />
+      </div>
+
+      <FooterSection onSignIn={openSignIn} />
+
+      {unAuthOpen && <UnauthorizedModal onClose={closeUnAuth} onSignIn={openSignIn} />}
+      {signInOpen && <SignInModal onClose={closeSignIn} />}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
