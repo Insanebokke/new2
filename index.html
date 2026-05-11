@@ -270,11 +270,12 @@ function OutlineBtn({ full = false, onClick, children }) {
    ACTION BAR  (flex-1 pill buttons with ring-2)
 ═══════════════════════════════════════ */
 
-function ActionBtn({ hoverColor = '#111827', children }) {
+function ActionBtn({ hoverColor = '#111827', onClick, children }) {
   const [hov, setHov] = React.useState(false);
   return (
     <div style={{ flex: 1 }}>
       <button
+        onClick={onClick}
         onMouseEnter={() => setHov(true)}
         onMouseLeave={() => setHov(false)}
         style={{
@@ -307,7 +308,7 @@ const ActionBar = () => (
     gap: '8px',
     padding: '14px 0 16px 0',
   }}>
-    <ActionBtn hoverColor="#2563eb"><IcoChat /></ActionBtn>
+    <ActionBtn hoverColor="#2563eb" onClick={() => window.open('https://truthsocial.com/@realDonaldTrump/posts/116552577177859102', '_blank', 'noopener,noreferrer')}><IcoChat /></ActionBtn>
     <ActionBtn hoverColor="#16a34a"><IcoRetweet /></ActionBtn>
     <ActionBtn hoverColor="#ef4444"><IcoHeart /></ActionBtn>
     <ActionBtn hoverColor="#2563eb"><IcoBookmark /></ActionBtn>
