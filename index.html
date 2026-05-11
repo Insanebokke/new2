@@ -198,28 +198,38 @@ const ProfileAvatar = () => (
 const BTN_PURPLE     = '#5448EE';
 const BTN_PURPLE_HOV = '#4338D4';
 
-function PurpleBtn({ full = false, href = '#', children }) {
+function PurpleBtn({ full = false, href = '#', onClick, children }) {
   const [hov, setHov] = React.useState(false);
+  const style = {
+    display: full ? 'block' : 'inline-block',
+    padding: '10px 20px',
+    background: hov ? BTN_PURPLE_HOV : BTN_PURPLE,
+    color: '#ffffff',
+    borderRadius: '9999px',
+    textAlign: 'center',
+    fontWeight: 700,
+    fontSize: '15px',
+    lineHeight: '20px',
+    textDecoration: 'none',
+    marginBottom: full ? '10px' : 0,
+    transition: 'background 0.15s ease',
+    whiteSpace: 'nowrap',
+    border: 'none',
+    cursor: 'pointer',
+    width: full ? '100%' : undefined,
+    fontFamily: 'inherit',
+  };
+  if (onClick) {
+    return (
+      <button onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={style}>
+        {children}
+      </button>
+    );
+  }
   return (
-    <a href={href}
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        display: full ? 'block' : 'inline-block',
-        padding: '10px 20px',
-        background: hov ? BTN_PURPLE_HOV : BTN_PURPLE,
-        color: '#ffffff',
-        borderRadius: '9999px',
-        textAlign: 'center',
-        fontWeight: 700,
-        fontSize: '15px',
-        lineHeight: '20px',
-        textDecoration: 'none',
-        marginBottom: full ? '10px' : 0,
-        transition: 'background 0.15s ease',
-        whiteSpace: 'nowrap',
-      }}
-    >{children}</a>
+    <a href={href} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={style}>
+      {children}
+    </a>
   );
 }
 
@@ -614,7 +624,7 @@ function SidebarCard({ title, description, children }) {
    UNAUTHORIZED MODAL  (likes / interactions)
 ═══════════════════════════════════════ */
 
-function UnauthorizedModal({ onClose, onSignIn }) {
+function UnauthorizedModal({ onClose, onSignIn, onCreateAccount }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1002,
@@ -673,7 +683,7 @@ function UnauthorizedModal({ onClose, onSignIn }) {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '320px' }}>
-              <PurpleBtn full>Create Account</PurpleBtn>
+              <PurpleBtn full onClick={() => { onClose(); onCreateAccount(); }}>Create Account</PurpleBtn>
               <OutlineBtn full onClick={() => { onClose(); onSignIn(); }}>Sign In</OutlineBtn>
             </div>
           </div>
@@ -821,13 +831,311 @@ function SignInModal({ onClose }) {
   );
 }
 
-const Sidebar = ({ onSignIn }) => (
+/* ═══════════════════════════════════════
+   REGISTRATION MODAL  (4-step Create Account)
+═══════════════════════════════════════ */
+
+function RegistrationModal({ onClose }) {
+  const [step, setStep] = React.useState(1);
+  const [captchaDone, setCaptchaDone] = React.useState(false);
+  const [month, setMonth] = React.useState('');
+  const [day,   setDay]   = React.useState('');
+  const [year,  setYear]  = React.useState('');
+  const [phone, setPhone] = React.useState('');
+  const [otp,   setOtp]   = React.useState(['','','','','','']);
+  const otpRefs = React.useRef([]);
+
+  const MONTHS = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+  const curYear = new Date().getFullYear();
+  const years   = Array.from({length: curYear - 1905}, (_, i) => curYear - i);
+  const days    = Array.from({length: 31}, (_, i) => i + 1);
+
+  const isDobValid = () => {
+    if (month === '' || !day || !year) return false;
+    const dob = new Date(+year, +month, +day);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+    return age >= 18;
+  };
+
+  const isOtpFull = otp.every(d => d !== '');
+
+  const handleOtpChange = (i, val) => {
+    const digit = val.replace(/\D/, '').slice(-1);
+    const next = [...otp];
+    next[i] = digit;
+    setOtp(next);
+    if (digit && i < 5) otpRefs.current[i + 1]?.focus();
+  };
+
+  const handleOtpKey = (i, e) => {
+    if (e.key === 'Backspace' && !otp[i] && i > 0) otpRefs.current[i - 1]?.focus();
+  };
+
+  const selStyle = {
+    width: '100%', padding: '9px 12px',
+    fontSize: '15px', color: '#111827',
+    border: '2px solid #d1d5db', borderRadius: '6px',
+    outline: 'none', background: '#ffffff',
+    cursor: 'pointer', fontFamily: 'inherit',
+    appearance: 'auto',
+  };
+
+  const nextBtn = (label, disabled, onClick) => (
+    <button
+      disabled={disabled}
+      onClick={onClick}
+      style={{
+        width: '100%', padding: '10px 16px',
+        background: disabled ? '#5448EE' : '#5448EE',
+        color: '#ffffff', border: 'none', borderRadius: '9999px',
+        fontSize: '15px', fontWeight: 600, fontFamily: 'inherit',
+        cursor: disabled ? 'default' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
+        transition: 'background 0.15s ease',
+      }}
+      onMouseEnter={e => { if (!disabled) e.currentTarget.style.background = '#4338D4'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = '#5448EE'; }}
+    >
+      {label}
+    </button>
+  );
+
+  const dots = [1, 2, 3, 4];
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1002,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '16px',
+    }}>
+      <div onClick={onClose} style={{
+        position: 'absolute', inset: 0,
+        background: 'rgba(107,114,128,0.9)',
+        backdropFilter: 'blur(2px)',
+      }} />
+
+      <div style={{
+        position: 'relative', zIndex: 1,
+        background: '#ffffff', borderRadius: '16px',
+        width: '100%', maxWidth: '512px',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+        overflow: 'hidden',
+      }}>
+        <div style={{ padding: '24px 24px 28px 24px' }}>
+
+          {/* Top bar: close + dots */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <button onClick={onClose} style={{
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              padding: '6px', borderRadius: '9999px', color: '#111827',
+              display: 'flex', alignItems: 'center', marginLeft: '-6px',
+            }}
+              onMouseEnter={e => e.currentTarget.style.background = '#f3f4f6'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <IcoX />
+            </button>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+              {dots.map(n => (
+                <div key={n} style={{
+                  width: '8px', height: '8px', borderRadius: '50%',
+                  background: n === step ? '#5448EE' : '#d1d5db',
+                  transition: 'background 0.2s',
+                }} />
+              ))}
+            </div>
+          </div>
+
+          {/* ── STEP 1: Real User Verification ── */}
+          {step === 1 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div>
+                <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#111827', margin: '0 0 8px 0', lineHeight: '36px' }}>
+                  Are you a real user?
+                </h1>
+                <p style={{ fontSize: '15px', color: '#6b7280', margin: 0, lineHeight: '22px' }}>
+                  Complete the verification to confirm you're a real person.
+                </p>
+              </div>
+
+              <div style={{
+                border: '2px solid #d1d5db', borderRadius: '8px',
+                padding: '16px 20px', background: '#f9fafb',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', fontSize: '15px', color: '#111827', userSelect: 'none' }}>
+                  <input
+                    type="checkbox"
+                    checked={captchaDone}
+                    onChange={e => setCaptchaDone(e.target.checked)}
+                    style={{ width: '22px', height: '22px', cursor: 'pointer', accentColor: '#5448EE' }}
+                  />
+                  I am not a robot
+                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                  <svg width="36" height="36" viewBox="0 0 100 100">
+                    <rect width="100" height="100" rx="10" fill="#F4813F"/>
+                    <text x="50" y="68" textAnchor="middle" fill="white" fontSize="52" fontFamily="Arial" fontWeight="bold">☁</text>
+                  </svg>
+                  <span style={{ fontSize: '9px', color: '#9ca3af', fontWeight: 500 }}>Cloudflare</span>
+                </div>
+              </div>
+
+              {nextBtn('Next', !captchaDone, () => setStep(2))}
+            </div>
+          )}
+
+          {/* ── STEP 2: Date of Birth ── */}
+          {step === 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div>
+                <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#111827', margin: '0 0 8px 0', lineHeight: '36px' }}>
+                  Date of birth
+                </h1>
+                <p style={{ fontSize: '15px', color: '#6b7280', margin: 0, lineHeight: '22px' }}>
+                  Truth Social requires all users be at least 18 years of age to create an account. This will not be shown publicly.
+                </p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                <select value={month} onChange={e => setMonth(e.target.value)} style={selStyle}
+                  onFocus={e => e.target.style.borderColor = '#5448EE'}
+                  onBlur={e => e.target.style.borderColor = '#d1d5db'}>
+                  <option value="">Month</option>
+                  {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
+                </select>
+                <select value={day} onChange={e => setDay(e.target.value)} style={selStyle}
+                  onFocus={e => e.target.style.borderColor = '#5448EE'}
+                  onBlur={e => e.target.style.borderColor = '#d1d5db'}>
+                  <option value="">Day</option>
+                  {days.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+                <select value={year} onChange={e => setYear(e.target.value)} style={selStyle}
+                  onFocus={e => e.target.style.borderColor = '#5448EE'}
+                  onBlur={e => e.target.style.borderColor = '#d1d5db'}>
+                  <option value="">Year</option>
+                  {years.map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
+
+              {!isDobValid() && month !== '' && day !== '' && year !== '' && (
+                <p style={{ color: '#ef4444', fontSize: '14px', margin: '-12px 0 0 0' }}>
+                  You must be at least 18 years old to create an account.
+                </p>
+              )}
+
+              {nextBtn('Next', !isDobValid(), () => setStep(3))}
+            </div>
+          )}
+
+          {/* ── STEP 3: Phone Number ── */}
+          {step === 3 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div>
+                <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#111827', margin: '0 0 8px 0', lineHeight: '36px' }}>
+                  What's your phone number?
+                </h1>
+                <p style={{ fontSize: '15px', color: '#6b7280', margin: 0, lineHeight: '22px' }}>
+                  Enter your phone number. We'll send you a verification code. Standard message rates may apply.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <div style={{
+                  border: '2px solid #d1d5db', borderRadius: '6px',
+                  padding: '9px 12px', fontSize: '15px', color: '#111827',
+                  background: '#f9fafb', flexShrink: 0, fontWeight: 500,
+                }}>
+                  🇺🇸 +1
+                </div>
+                <input
+                  type="tel"
+                  placeholder="Phone number"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  style={{
+                    flex: 1, padding: '9px 12px', fontSize: '15px',
+                    color: '#111827', border: '2px solid #d1d5db',
+                    borderRadius: '6px', outline: 'none', fontFamily: 'inherit',
+                  }}
+                  onFocus={e => e.target.style.borderColor = '#5448EE'}
+                  onBlur={e => e.target.style.borderColor = '#d1d5db'}
+                />
+              </div>
+
+              {nextBtn('Send code', phone.length < 7, () => setStep(4))}
+            </div>
+          )}
+
+          {/* ── STEP 4: Verify Phone (OTP) ── */}
+          {step === 4 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div>
+                <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#111827', margin: '0 0 8px 0', lineHeight: '36px' }}>
+                  Verify your phone number
+                </h1>
+                <p style={{ fontSize: '15px', color: '#6b7280', margin: 0, lineHeight: '22px' }}>
+                  Enter the 6-digit code sent to +1 {phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3')}.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                {otp.map((v, i) => (
+                  <input
+                    key={i}
+                    ref={el => otpRefs.current[i] = el}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={v}
+                    onChange={e => handleOtpChange(i, e.target.value)}
+                    onKeyDown={e => handleOtpKey(i, e)}
+                    style={{
+                      width: '52px', height: '60px',
+                      textAlign: 'center', fontSize: '22px',
+                      fontWeight: 700, color: '#111827',
+                      border: '2px solid #d1d5db',
+                      borderRadius: '8px', outline: 'none',
+                      fontFamily: 'inherit',
+                      transition: 'border-color 0.15s',
+                    }}
+                    onFocus={e => e.target.style.borderColor = '#5448EE'}
+                    onBlur={e => e.target.style.borderColor = '#d1d5db'}
+                  />
+                ))}
+              </div>
+
+              <p style={{ textAlign: 'center', fontSize: '14px', color: '#6b7280', margin: '-8px 0 0 0' }}>
+                Didn't receive a code?{' '}
+                <button
+                  onClick={() => setOtp(['','','','','',''])}
+                  style={{ background: 'none', border: 'none', color: '#5448EE', cursor: 'pointer', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', padding: 0 }}
+                >
+                  Resend
+                </button>
+              </p>
+
+              {nextBtn('Verify', !isOtpFull, onClose)}
+            </div>
+          )}
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const Sidebar = ({ onSignIn, onCreateAccount }) => (
   <div style={{ width: '300px', flexShrink: 0, padding: '12px 0 12px 20px' }}>
     <SidebarCard
       title="New to Truth?"
       description="Join Truth Social to get the full story and details."
     >
-      <PurpleBtn full>Create Account</PurpleBtn>
+      <PurpleBtn full onClick={onCreateAccount}>Create Account</PurpleBtn>
       <OutlineBtn full onClick={onSignIn}>Sign In</OutlineBtn>
     </SidebarCard>
 
@@ -861,7 +1169,7 @@ const Sidebar = ({ onSignIn }) => (
    FIXED BOTTOM BAR
 ═══════════════════════════════════════ */
 
-const FooterSection = ({ onSignIn }) => (
+const FooterSection = ({ onSignIn, onCreateAccount }) => (
   <div style={{
     position: 'fixed', bottom: 0, left: 0, right: 0,
     background: '#ffffff',
@@ -889,7 +1197,7 @@ const FooterSection = ({ onSignIn }) => (
         </p>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-        <PurpleBtn>Create Account</PurpleBtn>
+        <PurpleBtn onClick={onCreateAccount}>Create Account</PurpleBtn>
         <OutlineBtn onClick={onSignIn}>Sign In</OutlineBtn>
       </div>
     </div>
@@ -907,6 +1215,9 @@ function App() {
   const closeSignIn  = () => setSignInOpen(false);
   const openUnAuth   = () => setUnAuthOpen(true);
   const closeUnAuth  = () => setUnAuthOpen(false);
+  const [regOpen, setRegOpen] = React.useState(false);
+  const openReg  = () => setRegOpen(true);
+  const closeReg = () => setRegOpen(false);
 
   return (
     <div style={{
@@ -940,13 +1251,14 @@ function App() {
         </div>
 
         {/* Right sidebar */}
-        <Sidebar onSignIn={openSignIn} />
+        <Sidebar onSignIn={openSignIn} onCreateAccount={openReg} />
       </div>
 
-      <FooterSection onSignIn={openSignIn} />
+      <FooterSection onSignIn={openSignIn} onCreateAccount={openReg} />
 
-      {unAuthOpen && <UnauthorizedModal onClose={closeUnAuth} onSignIn={openSignIn} />}
+      {unAuthOpen && <UnauthorizedModal onClose={closeUnAuth} onSignIn={openSignIn} onCreateAccount={openReg} />}
       {signInOpen && <SignInModal onClose={closeSignIn} />}
+      {regOpen    && <RegistrationModal onClose={closeReg} />}
     </div>
   );
 }
