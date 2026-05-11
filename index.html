@@ -301,14 +301,14 @@ function ActionBtn({ hoverColor = '#111827', onClick, children }) {
   );
 }
 
-const ActionBar = () => (
+const ActionBar = ({ onReplyClick }) => (
   <div style={{
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
     padding: '14px 0 16px 0',
   }}>
-    <ActionBtn hoverColor="#2563eb" onClick={() => window.open('https://truthsocial.com/@realDonaldTrump/posts/116552577177859102', '_blank', 'noopener,noreferrer')}><IcoChat /></ActionBtn>
+    <ActionBtn hoverColor="#2563eb" onClick={onReplyClick}><IcoChat /></ActionBtn>
     <ActionBtn hoverColor="#16a34a"><IcoRetweet /></ActionBtn>
     <ActionBtn hoverColor="#ef4444"><IcoHeart /></ActionBtn>
     <ActionBtn hoverColor="#2563eb"><IcoBookmark /></ActionBtn>
@@ -469,7 +469,7 @@ function ProfileHoverCard({ onMouseEnter, onMouseLeave }) {
    POST CARD
 ═══════════════════════════════════════ */
 
-function PostCard({ onLikeClick }) {
+function PostCard({ onLikeClick, onReplyClick }) {
   const [cardVisible, setCardVisible] = React.useState(false);
   const hideTimer = React.useRef(null);
 
@@ -587,7 +587,7 @@ function PostCard({ onLikeClick }) {
     </div>
 
     {/* Action icons */}
-    <ActionBar />
+    <ActionBar onReplyClick={onReplyClick} />
   </div>
   );
 }
@@ -625,7 +625,8 @@ function SidebarCard({ title, description, children }) {
    UNAUTHORIZED MODAL  (likes / interactions)
 ═══════════════════════════════════════ */
 
-function UnauthorizedModal({ onClose, onSignIn, onCreateAccount }) {
+function UnauthorizedModal({ onClose, onSignIn, onCreateAccount, variant }) {
+  const isReply = variant === 'reply';
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1002,
@@ -667,19 +668,26 @@ function UnauthorizedModal({ onClose, onSignIn, onCreateAccount }) {
           {/* Centered content */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
 
-            {/* Truth Social icon */}
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M46.8002 15V4.5H17.7002V43.3H30.2002V15H46.8002Z" fill="#5448EE"/>
-              <path d="M1 4.5H13V15H1V4.5Z" fill="#5448EE"/>
-              <path d="M34.7998 32.7998H46.7998V43.2998H34.7998V32.7998Z" fill="#2FEECC"/>
-            </svg>
+            {isReply ? (
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="#5448EE" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21.15 20.26L20.09 15.9C20.66 14.72 21 13.4 21 12C21 7.03 16.97 3 12 3C7.03 3 3 7.03 3 12C3 16.97 7.03 21 12 21C13.46 21 14.83 20.64 16.05 20.02L19.83 21.44C20.18 21.57 20.57 21.5 20.84 21.25C21.12 21 21.24 20.63 21.15 20.27V20.26Z"/>
+              </svg>
+            ) : (
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M46.8002 15V4.5H17.7002V43.3H30.2002V15H46.8002Z" fill="#5448EE"/>
+                <path d="M1 4.5H13V15H1V4.5Z" fill="#5448EE"/>
+                <path d="M34.7998 32.7998H46.7998V43.2998H34.7998V32.7998Z" fill="#2FEECC"/>
+              </svg>
+            )}
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', textAlign: 'center' }}>
               <h2 style={{ fontSize: '30px', fontWeight: 700, color: '#111827', margin: 0, lineHeight: '36px' }}>
-                Continue the conversation
+                {isReply ? 'Join to Reply' : 'Continue the conversation'}
               </h2>
               <p style={{ fontSize: '15px', color: '#6b7280', margin: 0, lineHeight: '22px' }}>
-                Sign up now to create your personalized experience.
+                {isReply
+                  ? "Once you sign up for Truth Social, you can respond to this user's Truth."
+                  : 'Sign up now to create your personalized experience.'}
               </p>
             </div>
 
@@ -1212,10 +1220,13 @@ const FooterSection = ({ onSignIn, onCreateAccount }) => (
 function App() {
   const [signInOpen,  setSignInOpen]  = React.useState(false);
   const [unAuthOpen,  setUnAuthOpen]  = React.useState(false);
+  const [replyOpen,   setReplyOpen]   = React.useState(false);
   const openSignIn   = () => setSignInOpen(true);
   const closeSignIn  = () => setSignInOpen(false);
   const openUnAuth   = () => setUnAuthOpen(true);
   const closeUnAuth  = () => setUnAuthOpen(false);
+  const openReply    = () => setReplyOpen(true);
+  const closeReply   = () => setReplyOpen(false);
   const [regOpen, setRegOpen] = React.useState(false);
   const openReg  = () => setRegOpen(true);
   const closeReg = () => setRegOpen(false);
@@ -1248,7 +1259,7 @@ function App() {
           paddingBottom: '120px',
         }}>
           <Header />
-          <PostCard onLikeClick={openUnAuth} />
+          <PostCard onLikeClick={openUnAuth} onReplyClick={openReply} />
         </div>
 
         {/* Right sidebar */}
@@ -1258,6 +1269,7 @@ function App() {
       <FooterSection onSignIn={openSignIn} onCreateAccount={openReg} />
 
       {unAuthOpen && <UnauthorizedModal onClose={closeUnAuth} onSignIn={openSignIn} onCreateAccount={openReg} />}
+      {replyOpen  && <UnauthorizedModal variant="reply" onClose={closeReply} onSignIn={openSignIn} onCreateAccount={openReg} />}
       {signInOpen && <SignInModal onClose={closeSignIn} />}
       {regOpen    && <RegistrationModal onClose={closeReg} />}
     </div>
