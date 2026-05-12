@@ -301,7 +301,7 @@ function ActionBtn({ hoverColor = '#111827', onClick, children }) {
   );
 }
 
-const ActionBar = ({ onReplyClick, onReTruthClick, onLikeClick }) => (
+const ActionBar = ({ onReplyClick, onReTruthClick, onLikeClick, onBookmarkClick }) => (
   <div style={{
     display: 'flex',
     alignItems: 'center',
@@ -311,7 +311,7 @@ const ActionBar = ({ onReplyClick, onReTruthClick, onLikeClick }) => (
     <ActionBtn hoverColor="#2563eb" onClick={onReplyClick}><IcoChat /></ActionBtn>
     <ActionBtn hoverColor="#16a34a" onClick={onReTruthClick}><IcoRetweet /></ActionBtn>
     <ActionBtn hoverColor="#ef4444" onClick={onLikeClick}><IcoHeart /></ActionBtn>
-    <ActionBtn hoverColor="#2563eb"><IcoBookmark /></ActionBtn>
+    <ActionBtn hoverColor="#2563eb" onClick={onBookmarkClick}><IcoBookmark /></ActionBtn>
     <ActionBtn hoverColor="#111827"><IcoShare /></ActionBtn>
   </div>
 );
@@ -469,7 +469,7 @@ function ProfileHoverCard({ onMouseEnter, onMouseLeave }) {
    POST CARD
 ═══════════════════════════════════════ */
 
-function PostCard({ onLikeClick, onReplyClick, onReTruthClick }) {
+function PostCard({ onLikeClick, onReplyClick, onReTruthClick, onBookmarkClick }) {
   const [cardVisible, setCardVisible] = React.useState(false);
   const hideTimer = React.useRef(null);
 
@@ -587,7 +587,7 @@ function PostCard({ onLikeClick, onReplyClick, onReTruthClick }) {
     </div>
 
     {/* Action icons */}
-    <ActionBar onReplyClick={onReplyClick} onReTruthClick={onReTruthClick} onLikeClick={onLikeClick} />
+    <ActionBar onReplyClick={onReplyClick} onReTruthClick={onReTruthClick} onLikeClick={onLikeClick} onBookmarkClick={onBookmarkClick} />
   </div>
   );
 }
@@ -626,9 +626,10 @@ function SidebarCard({ title, description, children }) {
 ═══════════════════════════════════════ */
 
 function UnauthorizedModal({ onClose, onSignIn, onCreateAccount, variant }) {
-  const isReply   = variant === 'reply';
-  const isReTruth = variant === 'retruth';
-  const isLike    = variant === 'like';
+  const isReply    = variant === 'reply';
+  const isReTruth  = variant === 'retruth';
+  const isLike     = variant === 'like';
+  const isBookmark = variant === 'bookmark';
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1002,
@@ -685,6 +686,11 @@ function UnauthorizedModal({ onClose, onSignIn, onCreateAccount, variant }) {
               <svg width="48" height="48" viewBox="0 0 24 24" fill="#ef4444" xmlns="http://www.w3.org/2000/svg">
                 <path d="M21.11 5.98996C19.55 3.13996 16.88 2.66996 14.9 3.17996C13.71 3.47996 12.7 4.12996 12 4.95996C11.3 4.12996 10.29 3.48996 9.09996 3.17996C7.11996 2.66996 4.44996 3.13996 2.87996 5.98996C1.81996 7.92996 1.70996 10.13 2.57996 12.36C4.07996 16.24 8.46996 19.84 11.67 20.94C11.78 20.98 11.89 20.99 12 20.99C12.11 20.99 12.22 20.97 12.33 20.94C15.54 19.83 19.93 16.24 21.43 12.36C22.29 10.13 22.18 7.92996 21.12 5.98996H21.11Z"/>
               </svg>
+            ) : isBookmark ? (
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="#5448EE" xmlns="http://www.w3.org/2000/svg">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M14 2a5 5 0 0 1 5 5v14a1 1 0 0 1 -1.555 .832l-5.445 -3.63l-5.444 3.63a1 1 0 0 1 -1.55 -.72l-.006 -.112v-14a5 5 0 0 1 5 -5h4z"/>
+              </svg>
             ) : (
               <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M46.8002 15V4.5H17.7002V43.3H30.2002V15H46.8002Z" fill="#5448EE"/>
@@ -695,7 +701,7 @@ function UnauthorizedModal({ onClose, onSignIn, onCreateAccount, variant }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', textAlign: 'center' }}>
               <h2 style={{ fontSize: '30px', fontWeight: 700, color: '#111827', margin: 0, lineHeight: '36px' }}>
-                {isReply ? 'Join to Reply' : isReTruth ? 'Join to ReTruth' : isLike ? 'Join to Like' : 'Continue the conversation'}
+                {isReply ? 'Join to Reply' : isReTruth ? 'Join to ReTruth' : isLike ? 'Join to Like' : isBookmark ? 'Join to Bookmark' : 'Continue the conversation'}
               </h2>
               <p style={{ fontSize: '15px', color: '#6b7280', margin: 0, lineHeight: '22px' }}>
                 {isReply
@@ -704,6 +710,8 @@ function UnauthorizedModal({ onClose, onSignIn, onCreateAccount, variant }) {
                   ? 'Once you sign up for Truth Social, you can ReTruth content to your followers.'
                   : isLike
                   ? 'Once you sign up for Truth Social, you can like the content that resonates with you most.'
+                  : isBookmark
+                  ? 'Once you sign up for Truth Social, you can save Truths for quick and easy access at anytime.'
                   : 'Sign up now to create your personalized experience.'}
               </p>
             </div>
@@ -1240,6 +1248,7 @@ function App() {
   const [replyOpen,   setReplyOpen]   = React.useState(false);
   const [reTruthOpen, setReTruthOpen] = React.useState(false);
   const [likeOpen,    setLikeOpen]    = React.useState(false);
+  const [bookmarkOpen, setBookmarkOpen] = React.useState(false);
   const openSignIn   = () => setSignInOpen(true);
   const closeSignIn  = () => setSignInOpen(false);
   const openUnAuth   = () => setUnAuthOpen(true);
@@ -1250,6 +1259,8 @@ function App() {
   const closeReTruth = () => setReTruthOpen(false);
   const openLike     = () => setLikeOpen(true);
   const closeLike    = () => setLikeOpen(false);
+  const openBookmark  = () => setBookmarkOpen(true);
+  const closeBookmark = () => setBookmarkOpen(false);
   const [regOpen, setRegOpen] = React.useState(false);
   const openReg  = () => setRegOpen(true);
   const closeReg = () => setRegOpen(false);
@@ -1282,7 +1293,7 @@ function App() {
           paddingBottom: '120px',
         }}>
           <Header />
-          <PostCard onLikeClick={openLike} onReplyClick={openReply} onReTruthClick={openReTruth} />
+          <PostCard onLikeClick={openLike} onReplyClick={openReply} onReTruthClick={openReTruth} onBookmarkClick={openBookmark} />
         </div>
 
         {/* Right sidebar */}
@@ -1294,7 +1305,8 @@ function App() {
       {unAuthOpen && <UnauthorizedModal onClose={closeUnAuth} onSignIn={openSignIn} onCreateAccount={openReg} />}
       {replyOpen   && <UnauthorizedModal variant="reply"   onClose={closeReply}   onSignIn={openSignIn} onCreateAccount={openReg} />}
       {reTruthOpen && <UnauthorizedModal variant="retruth" onClose={closeReTruth} onSignIn={openSignIn} onCreateAccount={openReg} />}
-      {likeOpen    && <UnauthorizedModal variant="like"    onClose={closeLike}    onSignIn={openSignIn} onCreateAccount={openReg} />}
+      {likeOpen     && <UnauthorizedModal variant="like"     onClose={closeLike}     onSignIn={openSignIn} onCreateAccount={openReg} />}
+      {bookmarkOpen && <UnauthorizedModal variant="bookmark" onClose={closeBookmark} onSignIn={openSignIn} onCreateAccount={openReg} />}
       {signInOpen && <SignInModal onClose={closeSignIn} />}
       {regOpen    && <RegistrationModal onClose={closeReg} />}
     </div>
