@@ -301,20 +301,30 @@ function ActionBtn({ hoverColor = '#111827', onClick, children }) {
   );
 }
 
-const ActionBar = ({ onReplyClick, onReTruthClick, onLikeClick, onBookmarkClick }) => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '14px 0 16px 0',
-  }}>
-    <ActionBtn hoverColor="#2563eb" onClick={onReplyClick}><IcoChat /></ActionBtn>
-    <ActionBtn hoverColor="#16a34a" onClick={onReTruthClick}><IcoRetweet /></ActionBtn>
-    <ActionBtn hoverColor="#ef4444" onClick={onLikeClick}><IcoHeart /></ActionBtn>
-    <ActionBtn hoverColor="#2563eb" onClick={onBookmarkClick}><IcoBookmark /></ActionBtn>
-    <ActionBtn hoverColor="#111827"><IcoShare /></ActionBtn>
-  </div>
-);
+const ActionBar = ({ onReplyClick, onReTruthClick, onLikeClick, onBookmarkClick }) => {
+  const handleShare = async () => {
+    const url = 'https://truthsocial.com/@realDonaldTrump/posts/116552577177859102';
+    if (navigator.share) {
+      try { await navigator.share({ url, title: 'Donald J. Trump on Truth Social' }); } catch (e) {}
+    } else {
+      try { await navigator.clipboard.writeText(url); } catch (e) {}
+    }
+  };
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      padding: '14px 0 16px 0',
+    }}>
+      <ActionBtn hoverColor="#2563eb" onClick={onReplyClick}><IcoChat /></ActionBtn>
+      <ActionBtn hoverColor="#16a34a" onClick={onReTruthClick}><IcoRetweet /></ActionBtn>
+      <ActionBtn hoverColor="#ef4444" onClick={onLikeClick}><IcoHeart /></ActionBtn>
+      <ActionBtn hoverColor="#2563eb" onClick={onBookmarkClick}><IcoBookmark /></ActionBtn>
+      <ActionBtn hoverColor="#111827" onClick={handleShare}><IcoShare /></ActionBtn>
+    </div>
+  );
+};
 
 /* ═══════════════════════════════════════
    HEADER
