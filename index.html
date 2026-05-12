@@ -301,7 +301,7 @@ function ActionBtn({ hoverColor = '#111827', onClick, children }) {
   );
 }
 
-const ActionBar = ({ onReplyClick }) => (
+const ActionBar = ({ onReplyClick, onReTruthClick }) => (
   <div style={{
     display: 'flex',
     alignItems: 'center',
@@ -309,7 +309,7 @@ const ActionBar = ({ onReplyClick }) => (
     padding: '14px 0 16px 0',
   }}>
     <ActionBtn hoverColor="#2563eb" onClick={onReplyClick}><IcoChat /></ActionBtn>
-    <ActionBtn hoverColor="#16a34a"><IcoRetweet /></ActionBtn>
+    <ActionBtn hoverColor="#16a34a" onClick={onReTruthClick}><IcoRetweet /></ActionBtn>
     <ActionBtn hoverColor="#ef4444"><IcoHeart /></ActionBtn>
     <ActionBtn hoverColor="#2563eb"><IcoBookmark /></ActionBtn>
     <ActionBtn hoverColor="#111827"><IcoShare /></ActionBtn>
@@ -469,7 +469,7 @@ function ProfileHoverCard({ onMouseEnter, onMouseLeave }) {
    POST CARD
 ═══════════════════════════════════════ */
 
-function PostCard({ onLikeClick, onReplyClick }) {
+function PostCard({ onLikeClick, onReplyClick, onReTruthClick }) {
   const [cardVisible, setCardVisible] = React.useState(false);
   const hideTimer = React.useRef(null);
 
@@ -587,7 +587,7 @@ function PostCard({ onLikeClick, onReplyClick }) {
     </div>
 
     {/* Action icons */}
-    <ActionBar onReplyClick={onReplyClick} />
+    <ActionBar onReplyClick={onReplyClick} onReTruthClick={onReTruthClick} />
   </div>
   );
 }
@@ -626,7 +626,8 @@ function SidebarCard({ title, description, children }) {
 ═══════════════════════════════════════ */
 
 function UnauthorizedModal({ onClose, onSignIn, onCreateAccount, variant }) {
-  const isReply = variant === 'reply';
+  const isReply   = variant === 'reply';
+  const isReTruth = variant === 'retruth';
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1002,
@@ -672,6 +673,13 @@ function UnauthorizedModal({ onClose, onSignIn, onCreateAccount, variant }) {
               <svg width="48" height="48" viewBox="0 0 24 24" fill="#5448EE" xmlns="http://www.w3.org/2000/svg">
                 <path d="M21.15 20.26L20.09 15.9C20.66 14.72 21 13.4 21 12C21 7.03 16.97 3 12 3C7.03 3 3 7.03 3 12C3 16.97 7.03 21 12 21C13.46 21 14.83 20.64 16.05 20.02L19.83 21.44C20.18 21.57 20.57 21.5 20.84 21.25C21.12 21 21.24 20.63 21.15 20.27V20.26Z"/>
               </svg>
+            ) : isReTruth ? (
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.2793 3L20.5444 6.26506L17.2793 9.53011"/>
+                <path d="M4.87305 11.1622V9.52971C4.87305 8.66376 5.21704 7.83328 5.82936 7.22096C6.44168 6.60864 7.27216 6.26465 8.1381 6.26465H19.5658"/>
+                <path d="M7.16154 21.1639L3.89648 17.8988L7.16154 14.6338"/>
+                <path d="M19.5658 13V14.6325C19.5658 15.4985 19.2218 16.329 18.6095 16.9413C17.9972 17.5536 17.1667 17.8976 16.3007 17.8976H4.87305"/>
+              </svg>
             ) : (
               <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M46.8002 15V4.5H17.7002V43.3H30.2002V15H46.8002Z" fill="#5448EE"/>
@@ -682,11 +690,13 @@ function UnauthorizedModal({ onClose, onSignIn, onCreateAccount, variant }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', textAlign: 'center' }}>
               <h2 style={{ fontSize: '30px', fontWeight: 700, color: '#111827', margin: 0, lineHeight: '36px' }}>
-                {isReply ? 'Join to Reply' : 'Continue the conversation'}
+                {isReply ? 'Join to Reply' : isReTruth ? 'Join to ReTruth' : 'Continue the conversation'}
               </h2>
               <p style={{ fontSize: '15px', color: '#6b7280', margin: 0, lineHeight: '22px' }}>
                 {isReply
                   ? "Once you sign up for Truth Social, you can respond to this user's Truth."
+                  : isReTruth
+                  ? 'Once you sign up for Truth Social, you can ReTruth content to your followers.'
                   : 'Sign up now to create your personalized experience.'}
               </p>
             </div>
@@ -1221,12 +1231,15 @@ function App() {
   const [signInOpen,  setSignInOpen]  = React.useState(false);
   const [unAuthOpen,  setUnAuthOpen]  = React.useState(false);
   const [replyOpen,   setReplyOpen]   = React.useState(false);
+  const [reTruthOpen, setReTruthOpen] = React.useState(false);
   const openSignIn   = () => setSignInOpen(true);
   const closeSignIn  = () => setSignInOpen(false);
   const openUnAuth   = () => setUnAuthOpen(true);
   const closeUnAuth  = () => setUnAuthOpen(false);
   const openReply    = () => setReplyOpen(true);
   const closeReply   = () => setReplyOpen(false);
+  const openReTruth  = () => setReTruthOpen(true);
+  const closeReTruth = () => setReTruthOpen(false);
   const [regOpen, setRegOpen] = React.useState(false);
   const openReg  = () => setRegOpen(true);
   const closeReg = () => setRegOpen(false);
@@ -1259,7 +1272,7 @@ function App() {
           paddingBottom: '120px',
         }}>
           <Header />
-          <PostCard onLikeClick={openUnAuth} onReplyClick={openReply} />
+          <PostCard onLikeClick={openUnAuth} onReplyClick={openReply} onReTruthClick={openReTruth} />
         </div>
 
         {/* Right sidebar */}
@@ -1269,7 +1282,8 @@ function App() {
       <FooterSection onSignIn={openSignIn} onCreateAccount={openReg} />
 
       {unAuthOpen && <UnauthorizedModal onClose={closeUnAuth} onSignIn={openSignIn} onCreateAccount={openReg} />}
-      {replyOpen  && <UnauthorizedModal variant="reply" onClose={closeReply} onSignIn={openSignIn} onCreateAccount={openReg} />}
+      {replyOpen   && <UnauthorizedModal variant="reply"   onClose={closeReply}   onSignIn={openSignIn} onCreateAccount={openReg} />}
+      {reTruthOpen && <UnauthorizedModal variant="retruth" onClose={closeReTruth} onSignIn={openSignIn} onCreateAccount={openReg} />}
       {signInOpen && <SignInModal onClose={closeSignIn} />}
       {regOpen    && <RegistrationModal onClose={closeReg} />}
     </div>
